@@ -1,6 +1,8 @@
 #ifndef STAN_MATH_REV_ARR_FUNCTOR_COUPLED_ODE_SYSTEM_HPP
 #define STAN_MATH_REV_ARR_FUNCTOR_COUPLED_ODE_SYSTEM_HPP
 
+#include <stan/math/prim/mat/fun/typedefs.hpp>
+
 #include <stan/math/prim/arr/meta/get.hpp>
 #include <stan/math/prim/arr/meta/length.hpp>
 #include <stan/math/prim/arr/functor/coupled_ode_system.hpp>
@@ -8,6 +10,10 @@
 #include <stan/math/prim/scal/err/check_size_match.hpp>
 #include <stan/math/rev/scal/fun/value_of_rec.hpp>
 #include <stan/math/rev/core.hpp>
+
+#include <stan/math/fwd/core.hpp>
+#include <stan/math/prim/mat/fun/Eigen.hpp>
+
 #include <ostream>
 #include <stdexcept>
 #include <vector>
@@ -46,6 +52,7 @@ struct coupled_ode_system<F, double, var> {
   const std::vector<double>& y0_dbl_;
   const std::vector<var>& theta_;
   const std::vector<double> theta_dbl_;
+  mutable std::vector<fvar<double>> theta_fvars_;
   const std::vector<double>& x_;
   const std::vector<int>& x_int_;
   const size_t N_;
@@ -73,6 +80,7 @@ struct coupled_ode_system<F, double, var> {
         y0_dbl_(y0),
         theta_(theta),
         theta_dbl_(value_of(theta)),
+        theta_fvars_(theta_dbl_.begin(), theta_dbl_.end()),
         x_(x),
         x_int_(x_int),
         N_(y0.size()),
@@ -101,6 +109,35 @@ struct coupled_ode_system<F, double, var> {
                   double t) const {
     using std::vector;
 
+    vector<fvar<double>> y_fvars(z.begin(), z.begin() + N_);
+
+    Eigen::Map<const matrix_d> Stheta(z.data() + N_, N_, M_);
+    Eigen::Map<matrix_d> dStheta_dt(dz_dt.data() + N_, N_, M_);
+
+    // handle sensitivities wrt to theta
+    for (size_t i = 0; i < M_; ++i) {
+      for (size_t j = 0; j < N_; ++j)
+        y_fvars[j].d_ = Stheta(j, i);
+
+      theta_fvars_[i].d_ = 1.0;
+
+      vector<fvar<double>> dy_dt_fvars
+          = f_(t, y_fvars, theta_fvars_, x_, x_int_, msgs_);
+
+      check_size_match("coupled_ode_system", "dz_dt", dy_dt_fvars.size(),
+                       "states", N_);
+
+      for (size_t j = 0; j < N_; ++j) {
+        // Jy * Stheta + Jtheta(per column)
+        dStheta_dt(j, i) = dy_dt_fvars[j].tangent();
+        if (i == 0)
+          dz_dt[j] = dy_dt_fvars[j].val();
+      }
+
+      theta_fvars_[i].d_ = 0.0;
+    }
+
+    /*
     vector<double> grad(N_ + M_);
 
     try {
@@ -141,6 +178,7 @@ struct coupled_ode_system<F, double, var> {
       throw;
     }
     recover_memory_nested();
+    */
   }
 
   /**
@@ -176,11 +214,11 @@ struct coupled_ode_system<F, double, var> {
    *
    * @param y coupled states after solving the ode
    */
-  std::vector<std::vector<var> > decouple_states(
-      const std::vector<std::vector<double> >& y) const {
+  std::vector<std::vector<var>> decouple_states(
+      const std::vector<std::vector<double>>& y) const {
     std::vector<var> temp_vars(N_);
     std::vector<double> temp_gradients(M_);
-    std::vector<std::vector<var> > y_return(y.size());
+    std::vector<std::vector<var>> y_return(y.size());
 
     for (size_t i = 0; i < y.size(); i++) {
       // iterate over number of equations
@@ -284,6 +322,46 @@ struct coupled_ode_system<F, var, double> {
                   double t) const {
     using std::vector;
 
+    vector<fvar<double>> y_fvars(z.begin(), z.begin() + N_);
+
+    Eigen::Map<const matrix_d> S(z.data() + N_, N_, N_);
+    Eigen::Map<matrix_d> dS_dt(dz_dt.data() + N_, N_, N_);
+
+    for (size_t i = 0; i < N_; ++i) {
+      for (size_t j = 0; j < N_; ++j)
+        y_fvars[j].d_ = S(j, i);
+
+      vector<fvar<double>> dy_dt_fvars
+          = f_(t, y_fvars, theta_dbl_, x_, x_int_, msgs_);
+
+      check_size_match("coupled_ode_system", "dz_dt", dy_dt_fvars.size(),
+                       "states", N_);
+
+      for (size_t j = 0; j < N_; ++j) {
+        // Jy * S (per column)
+        dS_dt(j, i) = dy_dt_fvars[j].tangent();
+        if (i == 0)
+          dz_dt[j] = dy_dt_fvars[j].val();
+      }
+    }
+
+    /*
+    matrix_d Jtheta(N_, M_);
+
+    for(size_t i = 0; i < M_; ++i) {
+      if(i > 0)
+        theta_fvar[i - 1].d_ = 0.0;
+
+      thetavar[i].d_ = 1.0;
+
+      vector<fvar<double> > dy = f_(t, y_var, thetavar, x_, x_int_, msgs_);
+
+      for(int j = 0; j < dy.size(); j++)
+        Jtheta(j, i) = dy[j].tangent();
+    }
+    */
+
+    /*
     std::vector<double> grad(N_);
 
     try {
@@ -317,6 +395,7 @@ struct coupled_ode_system<F, var, double> {
       throw;
     }
     recover_memory_nested();
+    */
   }
 
   /**
@@ -356,13 +435,13 @@ struct coupled_ode_system<F, var, double> {
    *
    * @param y the vector of the coupled states after solving the ode
    */
-  std::vector<std::vector<var> > decouple_states(
-      const std::vector<std::vector<double> >& y) const {
+  std::vector<std::vector<var>> decouple_states(
+      const std::vector<std::vector<double>>& y) const {
     using std::vector;
 
     vector<var> temp_vars(N_);
     vector<double> temp_gradients(N_);
-    vector<vector<var> > y_return(y.size());
+    vector<vector<var>> y_return(y.size());
 
     for (size_t i = 0; i < y.size(); i++) {
       // iterate over number of equations
@@ -422,6 +501,7 @@ struct coupled_ode_system<F, var, var> {
   const std::vector<double> y0_dbl_;
   const std::vector<var>& theta_;
   const std::vector<double> theta_dbl_;
+  mutable std::vector<fvar<double>> theta_fvars_;
   const std::vector<double>& x_;
   const std::vector<int>& x_int_;
   const size_t N_;
@@ -451,6 +531,7 @@ struct coupled_ode_system<F, var, var> {
         y0_dbl_(value_of(y0)),
         theta_(theta),
         theta_dbl_(value_of(theta)),
+        theta_fvars_(theta_dbl_.begin(), theta_dbl_.end()),
         x_(x),
         x_int_(x_int),
         N_(y0.size()),
@@ -478,6 +559,55 @@ struct coupled_ode_system<F, var, var> {
                   double t) const {
     using std::vector;
 
+    vector<fvar<double>> y_fvars(z.begin(), z.begin() + N_);
+
+    Eigen::Map<const matrix_d> Sy(z.data() + N_, N_, N_);
+    Eigen::Map<matrix_d> dSy_dt(dz_dt.data() + N_, N_, N_);
+
+    // handle sensitivities wrt to y
+    for (size_t i = 0; i < N_; ++i) {
+      for (size_t j = 0; j < N_; ++j)
+        y_fvars[j].d_ = Sy(j, i);
+
+      vector<fvar<double>> dy_dt_fvars
+          = f_(t, y_fvars, theta_dbl_, x_, x_int_, msgs_);
+
+      check_size_match("coupled_ode_system", "dz_dt", dy_dt_fvars.size(),
+                       "states", N_);
+
+      for (size_t j = 0; j < N_; ++j) {
+        // Jy * Sy (per column)
+        dSy_dt(j, i) = dy_dt_fvars[j].tangent();
+        if (i == 0)
+          dz_dt[j] = dy_dt_fvars[j].val();
+      }
+    }
+
+    Eigen::Map<const matrix_d> Stheta(z.data() + N_ + N_ * N_, N_, M_);
+    Eigen::Map<matrix_d> dStheta_dt(dz_dt.data() + N_ + N_ * N_, N_, M_);
+
+    // handle sensitivities wrt to theta
+    for (size_t i = 0; i < M_; ++i) {
+      for (size_t j = 0; j < N_; ++j)
+        y_fvars[j].d_ = Stheta(j, i);
+
+      theta_fvars_[i].d_ = 1.0;
+
+      vector<fvar<double>> dy_dt_fvars
+          = f_(t, y_fvars, theta_fvars_, x_, x_int_, msgs_);
+
+      check_size_match("coupled_ode_system", "dz_dt", dy_dt_fvars.size(),
+                       "states", N_);
+
+      for (size_t j = 0; j < N_; ++j) {
+        // Jy * Stheta + Jtheta(per column)
+        dStheta_dt(j, i) = dy_dt_fvars[j].tangent();
+      }
+
+      theta_fvars_[i].d_ = 0.0;
+    }
+
+    /*
     vector<double> grad(N_ + M_);
 
     try {
@@ -518,6 +648,7 @@ struct coupled_ode_system<F, var, var> {
       throw;
     }
     recover_memory_nested();
+    */
   }
 
   /**
@@ -554,8 +685,8 @@ struct coupled_ode_system<F, var, var> {
    *
    * @param y the vector of the coupled states after solving the ode
    */
-  std::vector<std::vector<var> > decouple_states(
-      const std::vector<std::vector<double> >& y) const {
+  std::vector<std::vector<var>> decouple_states(
+      const std::vector<std::vector<double>>& y) const {
     using std::vector;
 
     vector<var> vars = y0_;
@@ -563,7 +694,7 @@ struct coupled_ode_system<F, var, var> {
 
     vector<var> temp_vars(N_);
     vector<double> temp_gradients(N_ + M_);
-    vector<vector<var> > y_return(y.size());
+    vector<vector<var>> y_return(y.size());
 
     for (size_t i = 0; i < y.size(); i++) {
       // iterate over number of equations
