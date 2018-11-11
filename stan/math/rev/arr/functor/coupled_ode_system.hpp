@@ -477,10 +477,10 @@ struct coupled_ode_system<F, var, var> {
       check_size_match("coupled_ode_system", "dz_dt", dy_dt_vars.size(),
                        "states", N_);
 
-      for (size_t j = 0; j < M_; j++)
-        theta_[j].vi_->set_zero_adjoint();
-
       for (size_t i = 0; i < N_; i++) {
+        for (size_t j = 0; j < M_; j++)
+          theta_[j].vi_->set_zero_adjoint();
+
         dz_dt[i] = dy_dt_vars[i].val();
         dy_dt_vars[i].grad();
 
@@ -498,7 +498,9 @@ struct coupled_ode_system<F, var, var> {
 
         for (size_t j = 0; j < M_; j++) {
           double temp_deriv = theta_[j].adj();
-          theta_[j].vi_->set_zero_adjoint();
+          // not doing the zeroing here leads to test failures...not
+          // sure why!
+          // theta_[j].vi_->set_zero_adjoint();
           const size_t offset = N_ + N_ * N_ + N_ * j;
           for (size_t k = 0; k < N_; k++)
             temp_deriv += z[offset + k] * y_vars[k].adj();
