@@ -10,7 +10,11 @@
 #ifdef STAN_MPI
 #include <stan/math/prim/mat/functor/map_rect_mpi.hpp>
 #else
-#include <stan/math/prim/mat/functor/map_rect_concurrent.hpp>
+//#ifdef STAN_TBB
+#include <stan/math/prim/mat/functor/map_rect_concurrent_tbb.hpp>
+//#else
+//#include <stan/math/prim/mat/functor/map_rect_concurrent.hpp>
+//#endif
 #endif
 
 #include <vector>
@@ -172,8 +176,15 @@ map_rect(const Eigen::Matrix<T_shared_param, Eigen::Dynamic, 1>& shared_params,
   return internal::map_rect_mpi<call_id, F, T_shared_param, T_job_param>(
       shared_params, job_params, x_r, x_i, msgs);
 #else
-  return internal::map_rect_concurrent<call_id, F, T_shared_param, T_job_param>(
+  //#ifdef STAN_TBB
+  return internal::map_rect_concurrent_tbb<call_id, F, T_shared_param,
+                                           T_job_param>(
       shared_params, job_params, x_r, x_i, msgs);
+  //#else
+  //  return internal::map_rect_concurrent<call_id, F, T_shared_param,
+  //  T_job_param>(
+  //      shared_params, job_params, x_r, x_i, msgs);
+  //#endif
 #endif
 }
 

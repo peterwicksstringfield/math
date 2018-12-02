@@ -1,0 +1,8 @@
+TBBROOT=$(HOME)/work/tbb-2019_U2
+
+CXXFLAGS+=-I$(TBBROOT)/include -DSTAN_TBB
+
+LDFLAGS += -L$(TBBROOT)/lib -ltbb
+# on MacOS
+LDFLAGS += -Wl,-rpath,$(TBBROOT)/lib
+
