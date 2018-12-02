@@ -258,7 +258,11 @@
 #include <stan/math/prim/mat/functor/finite_diff_hessian.hpp>
 #include <stan/math/prim/mat/functor/map_rect.hpp>
 #include <stan/math/prim/mat/functor/map_rect_combine.hpp>
+#ifdef STAN_TBB
+#include <stan/math/prim/mat/functor/map_rect_concurrent_tbb.hpp>
+#else
 #include <stan/math/prim/mat/functor/map_rect_concurrent.hpp>
+#endif
 #include <stan/math/prim/mat/functor/map_rect_reduce.hpp>
 #include <stan/math/prim/mat/prob/bernoulli_logit_glm_log.hpp>
 #include <stan/math/prim/mat/prob/bernoulli_logit_glm_lpmf.hpp>
