@@ -31,6 +31,7 @@ map_rect_concurrent_tbb(
 
   const int num_jobs = job_params.size();
   const vector_d shared_params_dbl = value_of(shared_params);
+  std::vector<int> world_f_out(num_jobs);
   std::vector<matrix_d> world_job_output(num_jobs);
 
   // std::cout << "Running with the Intel TBB..." << std::endl;
@@ -41,23 +42,18 @@ map_rect_concurrent_tbb(
                         world_job_output[i] = ReduceF()(shared_params_dbl,
                                                         value_of(job_params[i]),
                                                         x_r[i], x_i[i], msgs);
+                        world_f_out[i] = world_job_output[i].cols();
                       }
                     });
 
   // collect results
-  std::vector<int> world_f_out;
-  world_f_out.reserve(num_jobs);
-  matrix_d world_output(world_job_output[0].rows(),
-                        num_jobs * world_job_output[0].cols());
+  const int num_world_output
+      = std::accumulate(world_f_out.begin(), world_f_out.end(), 0);
+  matrix_d world_output(world_job_output[0].rows(), num_world_output);
 
   int offset = 0;
   for (const auto& job_result : world_job_output) {
     const int num_job_outputs = job_result.cols();
-    world_f_out.push_back(num_job_outputs);
-
-    if (world_output.cols() < offset + num_job_outputs)
-      world_output.conservativeResize(Eigen::NoChange,
-                                      2 * (offset + num_job_outputs));
 
     world_output.block(0, offset, world_output.rows(), num_job_outputs)
         = job_result;
