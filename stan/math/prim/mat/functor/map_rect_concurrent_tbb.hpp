@@ -33,14 +33,15 @@ map_rect_concurrent_tbb(
   const vector_d shared_params_dbl = value_of(shared_params);
   std::vector<matrix_d> world_job_output(num_jobs);
 
-  std::cout << "Running with the Intel TBB..." << std::endl;
+  // std::cout << "Running with the Intel TBB..." << std::endl;
 
   tbb::parallel_for(tbb::blocked_range<std::size_t>(0, num_jobs),
-                    [&](const tbb::blocked_range<size_t>& r) -> void {
-                      for (std::size_t i = r.begin(); i != r.end(); ++i)
+                    [&](const tbb::blocked_range<size_t>& r) {
+                      for (std::size_t i = r.begin(); i != r.end(); ++i) {
                         world_job_output[i] = ReduceF()(shared_params_dbl,
                                                         value_of(job_params[i]),
                                                         x_r[i], x_i[i], msgs);
+                      }
                     });
 
   // collect results

@@ -1,6 +1,6 @@
 TBBROOT=$(HOME)/work/tbb-2019_U2
 
-CXXFLAGS+=-I$(TBBROOT)/include -DSTAN_TBB
+CXXFLAGS+=-I$(TBBROOT)/include -DSTAN_TBB -DSTAN_THREADS
 
 LDFLAGS += -L$(TBBROOT)/lib -ltbb
 # on MacOS
