@@ -47,7 +47,7 @@ T f_match(const T& x) {
   return -2 * x;
 }
 double f_match(const double& x) { return -2 * x; }
-TEST(test_ad, match) {
+TEST(test_unit_math_test_ad, match) {
   double x = 3.2;
   auto g = [](const auto& u) { return f_match(u); };
   stan::test::expect_ad(g, x);
@@ -61,7 +61,7 @@ T f_mismatch(const T& x) {
   return -2 * x;
 }
 stan::math::var f_mismatch(const stan::math::var& x) { return 2 * x; }
-TEST(test_ad, mismatch) {
+TEST(test_unit_math_test_ad, mismatch) {
   double x = 3.2;
   auto g = [](const auto& u) { return f_mismatch(u); };
   // include following line to show exception error behavior
@@ -80,7 +80,7 @@ double f_misthrow(const double& x) {
   return -2 * x;
 }
 
-TEST(test_ad, misthrow) {
+TEST(test_unit_math_test_ad, misthrow) {
   double x = 1.73;
   auto h = [](const auto& u) { return f_misthrow(u); };
   // include following line to show exception error behavior
@@ -109,7 +109,7 @@ struct foo_fun {
 int foo_fun::calls_int_ = -1;
 int foo_fun::calls_t_ = -1;
 
-TEST(test_ad, integerGetsPassed) {
+TEST(test_unit_math_test_ad, integerGetsPassed) {
   // double arguments will not call int version
   foo_fun h;
   foo_fun::calls_int_ = 0;
@@ -193,7 +193,7 @@ int bar_fun::calls_int1_ = -1;
 int bar_fun::calls_int2_ = -1;
 int bar_fun::calls_int12_ = -1;
 
-TEST(testAd, integerGetsPassedBinary) {
+TEST(test_unit_math_test_ad, integerGetsPassedBinary) {
   bar_fun f;
 
   bar_fun::reset();
@@ -262,7 +262,7 @@ inline typename stan::math::apply_scalar_unary<baz_fun, T>::return_t baz(
   return stan::math::apply_scalar_unary<baz_fun, T>::apply(x);
 }
 
-TEST(testAd, integerGetsPassedVectorized) {
+TEST(test_unit_math_test_ad, integerGetsPassedVectorized) {
   auto h = [&](auto x) { return baz(x); };
 
   baz_int = 0;
@@ -394,7 +394,7 @@ int ternary_fun::calls_int13_ = 0;
 int ternary_fun::calls_int23_ = 0;
 int ternary_fun::calls_int123_ = 0;
 
-TEST(testUnitMath, testAdTernaryIntPassed) {
+TEST(test_unit_math_test_ad, testAdTernaryIntPassed) {
   ternary_fun f;
 
   // { }
