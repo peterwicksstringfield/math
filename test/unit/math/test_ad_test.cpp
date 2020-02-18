@@ -1,5 +1,6 @@
 #include <test/unit/math/test_ad.hpp>
 #include <gtest/gtest.h>
+#include <gtest/gtest-spi.h>
 #include <limits>
 #include <type_traits>
 #include <vector>
@@ -30,6 +31,76 @@ TEST(test_unit_math_test_ad, test_ad_binary) {
   stan::test::expect_ad(g, x, y2);
 }
 
+template <typename F, typename... Ts>
+int number_of_failures(const F& test, const Ts&... xs) {
+  testing::TestPartResultArray test_results;
+  testing::ScopedFakeTestPartResultReporter intercept_failures(
+      testing::ScopedFakeTestPartResultReporter::INTERCEPT_ONLY_CURRENT_THREAD,
+      &test_results);
+  int n = 0;
+  try {
+    test(xs...);
+  } catch (...) {
+    ++n;
+  }
+  for (int i = 0; i < test_results.size(); ++i) {
+    auto intercepted_result = test_results.GetTestPartResult(i).type();
+    if (intercepted_result == testing::TestPartResult::kFatalFailure
+        || intercepted_result == testing::TestPartResult::kNonFatalFailure)
+      ++n;
+  }
+  return n;
+}
+
+TEST(test_unit_math_test_ad, test_number_of_failures) {
+  auto test_that_does_nothing = []() {};
+  auto test_that_succeeds = []() { SUCCEED(); };
+  auto test_that_succeeds_twice = []() {
+    SUCCEED();
+    SUCCEED();
+  };
+  auto test_that_fails = []() { ADD_FAILURE(); };
+  auto test_that_fails_twice = []() {
+    ADD_FAILURE();
+    ADD_FAILURE();
+  };
+  auto test_that_succeeds_and_fails = []() {
+    SUCCEED();
+    ADD_FAILURE();
+  };
+  auto test_that_fails_and_succeeds = []() {
+    ADD_FAILURE();
+    SUCCEED();
+  };
+  auto test_that_fails_fatally = []() { FAIL(); };
+  auto test_that_fails_nonfatally_and_fatally = []() {
+    ADD_FAILURE();
+    FAIL();
+  };
+  auto test_that_throws = []() { throw std::exception{}; };
+  auto test_that_fails_and_throws = []() {
+    ADD_FAILURE();
+    throw std::exception{};
+  };
+
+  EXPECT_EQ(0, number_of_failures(test_that_does_nothing));
+  EXPECT_EQ(0, number_of_failures(test_that_succeeds));
+  EXPECT_EQ(0, number_of_failures(test_that_succeeds_twice));
+  EXPECT_EQ(1, number_of_failures(test_that_fails));
+  EXPECT_EQ(2, number_of_failures(test_that_fails_twice));
+  EXPECT_EQ(1, number_of_failures(test_that_succeeds_and_fails));
+  EXPECT_EQ(1, number_of_failures(test_that_fails_and_succeeds));
+  EXPECT_EQ(1, number_of_failures(test_that_fails_fatally));
+  EXPECT_EQ(2, number_of_failures(test_that_fails_nonfatally_and_fatally));
+  EXPECT_EQ(1, number_of_failures(test_that_throws));
+  EXPECT_EQ(2, number_of_failures(test_that_fails_and_throws));
+}
+
+template <typename F, typename... Ts>
+bool expect_ad_fails(const F& f, const Ts&... xs) {
+  auto g = [](auto& f, auto&... xs) { stan::test::expect_ad(f, xs...); };
+  return 0 < number_of_failures(g, f, xs...);
+}
 // VECTORIZED UNARY FUNCTION THAT PASSES
 
 // log10 is vectorized, so uses vectorized test
@@ -64,8 +135,7 @@ stan::math::var f_mismatch(const stan::math::var& x) { return 2 * x; }
 TEST(test_unit_math_test_ad, mismatch) {
   double x = 3.2;
   auto g = [](const auto& u) { return f_mismatch(u); };
-  // include following line to show exception error behavior
-  // stan::test::expect_ad(g, x);
+  EXPECT_TRUE(expect_ad_fails(g, x));
 }
 
 // OVERLOAD THAT FAILS DUE TO MISMATCHED EXCEPTION CONDITIONS
@@ -83,8 +153,7 @@ double f_misthrow(const double& x) {
 TEST(test_unit_math_test_ad, misthrow) {
   double x = 1.73;
   auto h = [](const auto& u) { return f_misthrow(u); };
-  // include following line to show exception error behavior
-  // stan::test::expect_ad(h, x);
+  EXPECT_TRUE(expect_ad_fails(h, x));
 }
 
 struct foo_fun {
