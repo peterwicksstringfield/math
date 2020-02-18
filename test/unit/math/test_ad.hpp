@@ -761,7 +761,7 @@ void expect_ad_vvv(const ad_tolerances& tols, const F& f, int x1, const T2& x2,
   expect_ad_vvv(tols, f, x1_dbl, x2, x3);
 
   // test value
-  expect_near_rel("expect_ad_vvv(int, int, T3)", f(x1, x2, x3),
+  expect_near_rel("expect_ad_vvv(int, T2, T3)", f(x1, x2, x3),
                   f(x1_dbl, x2, x3));
 
   // bind ints and test autodiff
@@ -785,7 +785,7 @@ void expect_ad_vvv(const ad_tolerances& tols, const F& f, const T1& x1, int x2,
   expect_ad_vvv(tols, f, x1, x2_dbl, x3);
 
   // test value
-  expect_near_rel("expect_ad_vvv(int, int, T3)", f(x1, x2, x3),
+  expect_near_rel("expect_ad_vvv(T1, int, T3)", f(x1, x2, x3),
                   f(x1, x2_dbl, x3));
 
   // bind ints and test autodiff
@@ -809,7 +809,7 @@ void expect_ad_vvv(const ad_tolerances& tols, const F& f, const T1& x1,
   expect_ad_vvv(tols, f, x1, x2, x3_dbl);
 
   // test value
-  expect_near_rel("expect_ad_vvv(int, int, T3)", f(x1, x2, x3),
+  expect_near_rel("expect_ad_vvv(T1, T2, int)", f(x1, x2, x3),
                   f(x1, x2, x3_dbl));
 
   // bind ints and test autodiff
@@ -835,7 +835,7 @@ void expect_ad_vvv(const ad_tolerances& tols, const F& f, int x1, const T2& x2,
   expect_ad_vvv(tols, f, x1, x2, x3_dbl);
 
   // test value
-  expect_near_rel("expect_ad_vvv(int, int, T3)", f(x1, x2, x3),
+  expect_near_rel("expect_ad_vvv(int, T2, int)", f(x1, x2, x3),
                   f(x1_dbl, x2, x3_dbl));
 
   // bind ints and test autodiff
@@ -864,7 +864,7 @@ void expect_ad_vvv(const ad_tolerances& tols, const F& f, const T1& x1, int x2,
   expect_ad_vvv(tols, f, x1, x2, x3_dbl);
 
   // test value
-  expect_near_rel("expect_ad_vvv(int, int, T3)", f(x1, x2, x3),
+  expect_near_rel("expect_ad_vvv(T1, int, int)", f(x1, x2, x3),
                   f(x1, x2_dbl, x3_dbl));
 
   // bind ints and test autodiff
@@ -891,7 +891,7 @@ void expect_ad_vvv(const ad_tolerances& tols, const F& f, int x1, int x2,
   double x3_dbl = static_cast<double>(x3);
 
   // test value
-  expect_near_rel("expect_ad_vvv(int, int, T3)", f(x1, x2, x3),
+  expect_near_rel("expect_ad_vvv(int, int, int)", f(x1, x2, x3),
                   f(x1_dbl, x2_dbl, x3_dbl));
 
   // test all promotion patterns;  includes all combos recursively
@@ -1480,7 +1480,8 @@ void expect_unary_vectorized(const ad_tolerances& tols, const F& f, Ts... xs) {
 /**
  * Test that the specified unary function produces derivatives and
  * values for the specified values that are consistent with primitive
- * values and finite differences.  Tests both scalars and containers.
+ * values and finite differences.  Tests both scalars and containers.  Uses
+ * default tolerances.
  *
  * @tparam F type of function to test
  * @tparam Ts type of remaining arguments to test
