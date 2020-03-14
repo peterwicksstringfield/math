@@ -239,9 +239,9 @@ return_type_t<T_theta, std::vector<Eigen::Matrix<T_lam, R, C>>> log_mix(
   check_bounded(function, "theta", theta, 0, 1);
   check_not_nan(function, "theta", theta);
   check_finite(function, "theta", theta);
+  check_not_nan(function, "lambda", lambda);
+  check_finite(function, "lambda", lambda);
   for (int n = 0; n < N; ++n) {
-    check_not_nan(function, "lambda", lambda[n]);
-    check_finite(function, "lambda", lambda[n]);
     check_consistent_sizes(function, "theta", theta, "lambda", lambda[n]);
   }
 

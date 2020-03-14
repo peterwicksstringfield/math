@@ -56,10 +56,7 @@ gp_matern32_cov(const std::vector<T_x> &x, const T_s &sigma,
                      stan::math::size(x[i]));
   }
 
-  for (size_t n = 0; n < x_size; ++n) {
-    check_not_nan(function, "x", x[n]);
-  }
-
+  check_not_nan(function, "x", x);
   check_positive_finite(function, "magnitude", sigma);
   check_positive_finite(function, "length scale", length_scale);
 
@@ -111,18 +108,11 @@ gp_matern32_cov(const std::vector<Eigen::Matrix<T_x, -1, 1>> &x,
     return cov;
   }
   const char *function = "gp_matern32_cov";
-  size_t l_size = length_scale.size();
-  for (size_t n = 0; n < x_size; ++n) {
-    check_not_nan(function, "x", x[n]);
-  }
-
+  check_not_nan(function, "x", x);
   check_positive_finite(function, "magnitude", sigma);
   check_positive_finite(function, "length scale", length_scale);
-
-  for (size_t n = 0; n < x_size; ++n) {
-    check_not_nan(function, "length scale", length_scale[n]);
-  }
-
+  check_not_nan(function, "length scale", length_scale);
+  size_t l_size = length_scale.size();
   check_size_match(function, "x dimension", stan::math::size(x[0]),
                    "number of length scales", l_size);
 
@@ -194,13 +184,8 @@ gp_matern32_cov(const std::vector<T_x1> &x1, const std::vector<T_x2> &x2,
                      stan::math::size(x2[i]));
   }
 
-  for (size_t n = 0; n < x1_size; ++n) {
-    check_not_nan(function, "x1", x1[n]);
-  }
-  for (size_t n = 0; n < x2_size; ++n) {
-    check_not_nan(function, "x2", x2[n]);
-  }
-
+  check_not_nan(function, "x1", x1);
+  check_not_nan(function, "x2", x2);
   check_positive_finite(function, "magnitude", sigma);
   check_positive_finite(function, "length scale", length_scale);
 
@@ -260,21 +245,12 @@ gp_matern32_cov(const std::vector<Eigen::Matrix<T_x1, -1, 1>> &x1,
   }
 
   const char *function = "gp_matern_32_cov";
-  for (size_t n = 0; n < x1_size; ++n) {
-    check_not_nan(function, "x1", x1[n]);
-  }
-  for (size_t n = 0; n < x2_size; ++n) {
-    check_not_nan(function, "x2", x2[n]);
-  }
-
+  check_not_nan(function, "x1", x1);
+  check_not_nan(function, "x2", x2);
   check_positive_finite(function, "magnitude", sigma);
   check_positive_finite(function, "length scale", length_scale);
-
+  check_not_nan(function, "length scale", length_scale);
   size_t l_size = length_scale.size();
-  for (size_t n = 0; n < l_size; ++n) {
-    check_not_nan(function, "length scale", length_scale[n]);
-  }
-
   for (size_t i = 0; i < x1_size; ++i) {
     check_size_match(function, "x1's row", stan::math::size(x1[i]),
                      "number of length scales", l_size);

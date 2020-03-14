@@ -40,13 +40,10 @@ gp_dot_prod_cov(const std::vector<Eigen::Matrix<T_x, Eigen::Dynamic, 1>> &x,
   check_not_nan("gp_dot_prod_cov", "sigma", sigma);
   check_nonnegative("gp_dot_prod_cov", "sigma", sigma);
   check_finite("gp_dot_prod_cov", "sigma", sigma);
+  check_not_nan("gp_dot_prod_cov", "x", x);
+  check_finite("gp_dot_prod_cov", "x", x);
 
   size_t x_size = x.size();
-  for (size_t i = 0; i < x_size; ++i) {
-    check_not_nan("gp_dot_prod_cov", "x", x[i]);
-    check_finite("gp_dot_prod_cov", "x", x[i]);
-  }
-
   Eigen::Matrix<return_type_t<T_x, T_sigma>, Eigen::Dynamic, Eigen::Dynamic>
       cov(x_size, x_size);
   if (x_size == 0) {
@@ -94,11 +91,10 @@ gp_dot_prod_cov(const std::vector<T_x> &x, const T_sigma &sigma) {
   check_not_nan("gp_dot_prod_cov", "sigma", sigma);
   check_nonnegative("gp_dot_prod_cov", "sigma", sigma);
   check_finite("gp_dot_prod_cov", "sigma", sigma);
-
-  size_t x_size = x.size();
   check_not_nan("gp_dot_prod_cov", "x", x);
   check_finite("gp_dot_prod_cov", "x", x);
 
+  size_t x_size = x.size();
   Eigen::Matrix<return_type_t<T_x, T_sigma>, Eigen::Dynamic, Eigen::Dynamic>
       cov(x_size, x_size);
   if (x_size == 0) {
@@ -149,17 +145,13 @@ gp_dot_prod_cov(const std::vector<Eigen::Matrix<T_x1, Eigen::Dynamic, 1>> &x1,
   check_not_nan("gp_dot_prod_cov", "sigma", sigma);
   check_nonnegative("gp_dot_prod_cov", "sigma", sigma);
   check_finite("gp_dot_prod_cov", "sigma", sigma);
+  check_not_nan("gp_dot_prod_cov", "x1", x1);
+  check_finite("gp_dot_prod_cov", "x1", x1);
+  check_not_nan("gp_dot_prod_cov", "x2", x2);
+  check_finite("gp_dot_prod_cov", "x2", x2);
 
   size_t x1_size = x1.size();
   size_t x2_size = x2.size();
-  for (size_t i = 0; i < x1_size; ++i) {
-    check_not_nan("gp_dot_prod_cov", "x1", x1[i]);
-    check_finite("gp_dot_prod_cov", "x1", x1[i]);
-  }
-  for (size_t i = 0; i < x2_size; ++i) {
-    check_not_nan("gp_dot_prod_cov", "x2", x2[i]);
-    check_finite("gp_dot_prod_cov", "x2", x2[i]);
-  }
   Eigen::Matrix<return_type_t<T_x1, T_x2, T_sigma>, Eigen::Dynamic,
                 Eigen::Dynamic>
       cov(x1_size, x2_size);

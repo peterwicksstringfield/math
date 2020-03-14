@@ -52,9 +52,7 @@ gp_periodic_cov(const std::vector<T_x> &x, const T_sigma &sigma, const T_l &l,
   check_positive(fun, "signal standard deviation", sigma);
   check_positive(fun, "length-scale", l);
   check_positive(fun, "period", p);
-  for (size_t n = 0; n < x.size(); ++n) {
-    check_not_nan(fun, "element of x", x[n]);
-  }
+  check_not_nan(fun, "element of x", x);
 
   Eigen::Matrix<return_type_t<T_x, T_sigma, T_l, T_p>, Eigen::Dynamic,
                 Eigen::Dynamic>
@@ -124,12 +122,8 @@ gp_periodic_cov(const std::vector<T_x1> &x1, const std::vector<T_x2> &x2,
   check_positive(fun, "signal standard deviation", sigma);
   check_positive(fun, "length-scale", l);
   check_positive(fun, "period", p);
-  for (size_t n = 0; n < x1.size(); ++n) {
-    check_not_nan(fun, "element of x1", x1[n]);
-  }
-  for (size_t n = 0; n < x2.size(); ++n) {
-    check_not_nan(fun, "element of x2", x2[n]);
-  }
+  check_not_nan(fun, "element of x1", x1);
+  check_not_nan(fun, "element of x2", x2);
 
   Eigen::Matrix<return_type_t<T_x1, T_x2, T_sigma, T_l, T_p>, Eigen::Dynamic,
                 Eigen::Dynamic>

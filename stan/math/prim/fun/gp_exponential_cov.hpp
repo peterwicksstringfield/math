@@ -54,9 +54,7 @@ gp_exponential_cov(const std::vector<T_x> &x, const T_s &sigma,
                      stan::math::size(x[i]));
   }
 
-  for (size_t i = 0; i < x_size; ++i) {
-    check_not_nan(function, "x", x[i]);
-  }
+  check_not_nan(function, "x", x);
 
   check_positive_finite(function, "magnitude", sigma);
   check_positive_finite(function, "length scale", length_scale);
@@ -106,9 +104,7 @@ gp_exponential_cov(const std::vector<Eigen::Matrix<T_x, -1, 1>> &x,
   }
 
   const char *function = "gp_exponential_cov";
-  for (size_t n = 0; n < x_size; ++n) {
-    check_not_nan(function, "x", x[n]);
-  }
+  check_not_nan(function, "x", x);
 
   check_positive_finite(function, "magnitude", sigma);
   check_positive_finite(function, "length scale", length_scale);

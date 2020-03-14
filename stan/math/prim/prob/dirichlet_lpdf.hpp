@@ -64,9 +64,8 @@ return_type_t<T_prob, T_prior_size> dirichlet_lpdf(const T_prob& theta,
 
   check_consistent_sizes(function, "probabilities", theta_vec[0],
                          "prior sample sizes", alpha_vec[0]);
-
+  check_positive(function, "prior sample sizes", alpha);
   for (size_t t = 0; t < t_length; t++) {
-    check_positive(function, "prior sample sizes", alpha_vec[t]);
     check_simplex(function, "probabilities", theta_vec[t]);
   }
 

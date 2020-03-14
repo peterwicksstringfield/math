@@ -80,11 +80,8 @@ return_type_t<T_y, T_loc, T_covar> multi_normal_prec_lpdf(
                    "rows of covariance parameter", Sigma.rows());
   check_size_match(function, "Size of random variable", size_y,
                    "columns of covariance parameter", Sigma.cols());
-
-  for (size_t i = 0; i < size_vec; i++) {
-    check_finite(function, "Location parameter", mu_vec[i]);
-    check_not_nan(function, "Random variable", y_vec[i]);
-  }
+  check_finite(function, "Location parameter", mu);
+  check_not_nan(function, "Random variable", y);
 
   if (size_y == 0) {
     return lp;

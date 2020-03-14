@@ -215,11 +215,9 @@ inline Eigen::Matrix<var, -1, -1> gp_exp_quad_cov(const std::vector<T_x> &x,
                                                   const var &length_scale) {
   check_positive("gp_exp_quad_cov", "sigma", sigma);
   check_positive("gp_exp_quad_cov", "length_scale", length_scale);
-  size_t x_size = x.size();
-  for (size_t i = 0; i < x_size; ++i) {
-    check_not_nan("gp_exp_quad_cov", "x", x[i]);
-  }
+  check_not_nan("gp_exp_quad_cov", "x", x);
 
+  size_t x_size = x.size();
   Eigen::Matrix<var, -1, -1> cov(x_size, x_size);
   if (x_size == 0) {
     return cov;
@@ -260,11 +258,9 @@ inline Eigen::Matrix<var, -1, -1> gp_exp_quad_cov(const std::vector<T_x> &x,
                                                   const var &length_scale) {
   check_positive("gp_exp_quad_cov", "marginal variance", sigma);
   check_positive("gp_exp_quad_cov", "length-scale", length_scale);
-  size_t x_size = x.size();
-  for (size_t i = 0; i < x_size; ++i) {
-    check_not_nan("gp_exp_quad_cov", "x", x[i]);
-  }
+  check_not_nan("gp_exp_quad_cov", "x", x);
 
+  size_t x_size = x.size();
   Eigen::Matrix<var, -1, -1> cov(x_size, x_size);
   if (x_size == 0) {
     return cov;

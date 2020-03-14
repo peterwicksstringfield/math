@@ -65,9 +65,7 @@ multi_student_t_rng(
     size_mu_old = size_mu_new;
   }
 
-  for (size_t i = 0; i < N; i++) {
-    check_finite(function, "Location parameter", mu_vec[i]);
-  }
+  check_finite(function, "Location parameter", mu);
 
   StdVectorBuilder<true, Eigen::VectorXd, T_loc> output(N);
 

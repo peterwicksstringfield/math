@@ -57,10 +57,7 @@ multi_normal_prec_rng(const T_loc &mu, const Eigen::MatrixXd &S, RNG &rng) {
                      size_mu);
   }
 
-  for (size_t i = 0; i < N; i++) {
-    check_finite(function, "Location parameter", mu_vec[i]);
-  }
-
+  check_finite(function, "Location parameter", mu);
   check_size_match(function, "Rows of location parameter", size_mu, "Rows of S",
                    S.rows());
 

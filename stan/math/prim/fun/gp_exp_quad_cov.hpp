@@ -186,9 +186,7 @@ gp_exp_quad_cov(const std::vector<T_x> &x, const T_sigma &sigma,
     return cov;
   }
 
-  for (size_t n = 0; n < x_size; ++n) {
-    check_not_nan("gp_exp_quad_cov", "x", x[n]);
-  }
+  check_not_nan("gp_exp_quad_cov", "x", x);
 
   cov = internal::gp_exp_quad_cov(x, square(sigma),
                                   -0.5 / square(length_scale));
@@ -270,12 +268,8 @@ gp_exp_quad_cov(const std::vector<T_x1> &x1, const std::vector<T_x2> &x2,
     return cov;
   }
 
-  for (size_t i = 0; i < x1_size; ++i) {
-    check_not_nan(function_name, "x1", x1[i]);
-  }
-  for (size_t i = 0; i < x2_size; ++i) {
-    check_not_nan(function_name, "x2", x2[i]);
-  }
+  check_not_nan(function_name, "x1", x1);
+  check_not_nan(function_name, "x2", x2);
 
   cov = internal::gp_exp_quad_cov(x1, x2, square(sigma),
                                   -0.5 / square(length_scale));
@@ -320,12 +314,8 @@ gp_exp_quad_cov(const std::vector<Eigen::Matrix<T_x1, -1, 1>> &x1,
   }
 
   const char *function_name = "gp_exp_quad_cov";
-  for (size_t i = 0; i < x1_size; ++i) {
-    check_not_nan(function_name, "x1", x1[i]);
-  }
-  for (size_t i = 0; i < x2_size; ++i) {
-    check_not_nan(function_name, "x2", x2[i]);
-  }
+  check_not_nan(function_name, "x1", x1);
+  check_not_nan(function_name, "x2", x2);
   check_positive_finite(function_name, "magnitude", sigma);
   check_positive_finite(function_name, "length scale", length_scale);
   check_size_match(function_name, "x dimension", x1[0].size(),
@@ -364,10 +354,7 @@ inline Eigen::MatrixXd gp_exp_quad_cov(const std::vector<double> &x,
   }
   const auto total_size = x_size + cov.size();
   if (total_size < opencl_context.tuning_opts().gp_exp_quad_cov_simple) {
-    for (size_t n = 0; n < x_size; ++n) {
-      check_not_nan("gp_exp_quad_cov", "x", x[n]);
-    }
-
+    check_not_nan("gp_exp_quad_cov", "x", x);
     cov = internal::gp_exp_quad_cov(x, square(sigma),
                                     -0.5 / square(length_scale));
     return cov;
@@ -410,9 +397,7 @@ inline Eigen::MatrixXd gp_exp_quad_cov(const std::vector<Eigen::VectorXd> &x,
   const size_t inner_x1_size = x[0].size();
   const auto total_size = x_size * inner_x1_size + cov.size();
   if (total_size < opencl_context.tuning_opts().gp_exp_quad_cov_complex) {
-    for (size_t i = 0; i < x_size; ++i) {
-      check_not_nan("gp_exp_quad_cov", "x", x[i]);
-    }
+    check_not_nan("gp_exp_quad_cov", "x", x);
     cov = internal::gp_exp_quad_cov(x, square(sigma),
                                     -0.5 / square(length_scale));
     return cov;
@@ -498,13 +483,8 @@ inline typename Eigen::MatrixXd gp_exp_quad_cov(const std::vector<double> &x1,
   }
   const auto total_size = x1.size() + x2.size() + cov.size();
   if (total_size < opencl_context.tuning_opts().gp_exp_quad_cov_simple) {
-    for (size_t i = 0; i < x1.size(); ++i) {
-      check_not_nan(function_name, "x1", x1[i]);
-    }
-    for (size_t i = 0; i < x2.size(); ++i) {
-      check_not_nan(function_name, "x2", x2[i]);
-    }
-
+    check_not_nan(function_name, "x1", x1);
+    check_not_nan(function_name, "x2", x2);
     cov = internal::gp_exp_quad_cov(x1, x2, square(sigma),
                                     -0.5 / square(length_scale));
     return cov;
@@ -555,13 +535,8 @@ inline typename Eigen::MatrixXd gp_exp_quad_cov(
   const auto total_size
       = x1_size * x1_inner_size + x2_size * x2_inner_size + cov.size();
   if (total_size < opencl_context.tuning_opts().gp_exp_quad_cov_complex) {
-    for (size_t i = 0; i < x1.size(); ++i) {
-      check_not_nan(function_name, "x1", x1[i]);
-    }
-    for (size_t i = 0; i < x2.size(); ++i) {
-      check_not_nan(function_name, "x2", x2[i]);
-    }
-
+    check_not_nan(function_name, "x1", x1);
+    check_not_nan(function_name, "x2", x2);
     cov = internal::gp_exp_quad_cov(x1, x2, square(sigma),
                                     -0.5 / square(length_scale));
     return cov;
@@ -616,12 +591,8 @@ inline typename Eigen::MatrixXd gp_exp_quad_cov(
   const auto total_size
       = x1_size * x1_inner_size + x2_size * x2_inner_size + l_size + cov.size();
   if (total_size < opencl_context.tuning_opts().gp_exp_quad_cov_complex) {
-    for (size_t i = 0; i < x1_size; ++i) {
-      check_not_nan(function_name, "x1", x1[i]);
-    }
-    for (size_t i = 0; i < x2_size; ++i) {
-      check_not_nan(function_name, "x1", x2[i]);
-    }
+    check_not_nan(function_name, "x1", x1);
+    check_not_nan(function_name, "x1", x2);
     cov = internal::gp_exp_quad_cov(divide_columns(x1, length_scale),
                                     divide_columns(x2, length_scale),
                                     square(sigma));
