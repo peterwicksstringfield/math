@@ -73,3 +73,13 @@ TEST(ErrorHandlingScalar, CheckPositive_nan) {
 
   EXPECT_THROW(check_positive(function, "x", nan), std::domain_error);
 }
+
+TEST(ErrorHandlingScalar, CheckPositive_0) {
+  using stan::math::check_positive;
+  const char* function = "check_positive";
+  EXPECT_THROW(check_positive(function, "x", 0U), std::domain_error);
+  EXPECT_THROW(check_positive(function, "x", (size_t)0), std::domain_error);
+  EXPECT_THROW(check_positive(function, "x", 0.0), std::domain_error);
+  EXPECT_THROW(check_positive(function, "x", -0.0), std::domain_error);
+  EXPECT_THROW(check_positive(function, "x", 0), std::domain_error);
+}
