@@ -21,6 +21,8 @@ Miscellaneous doxygen documentation cleanup.
 
 Functions check_not_nan, check_nonnegative, check_positive, check_finite, is_not_nan, is_nonnegative, is_positive, and is_scal_finite now operate on nested containers.
 
+Clearer error messages when csr_u_to_z is called with out of range indices.
+
 ======================================================================
 v3.1.0 (24 January 2020)
 ======================================================================
