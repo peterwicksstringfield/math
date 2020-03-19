@@ -1,5 +1,5 @@
-#ifndef STAN_MATH_PRIM_SCAL_FUN_ISNAN_HPP
-#define STAN_MATH_PRIM_SCAL_FUN_ISNAN_HPP
+#ifndef STAN_MATH_PRIM_FUN_ISNAN_HPP
+#define STAN_MATH_PRIM_FUN_ISNAN_HPP
 
 #include <stan/math/prim/meta.hpp>
 
