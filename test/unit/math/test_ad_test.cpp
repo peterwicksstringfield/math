@@ -31,6 +31,15 @@ TEST(test_unit_math_test_ad, test_ad_binary) {
   stan::test::expect_ad(g, x, y2);
 }
 
+/**
+ * Run test and count the number of failures. In particular, the result is 0 if
+ * the test succeeds and positive if the test fails.
+ * @tparam F type of test
+ * @tparam Ts types of arguments to test
+ * @param F the test to run
+ * @param xs the arguments to the test
+ * @return the number of failures
+ */
 template <typename F, typename... Ts>
 int number_of_failures(const F& test, const Ts&... xs) {
   testing::TestPartResultArray test_results;
@@ -43,12 +52,9 @@ int number_of_failures(const F& test, const Ts&... xs) {
   } catch (...) {
     ++n;
   }
-  for (int i = 0; i < test_results.size(); ++i) {
-    auto intercepted_result = test_results.GetTestPartResult(i).type();
-    if (intercepted_result == testing::TestPartResult::kFatalFailure
-        || intercepted_result == testing::TestPartResult::kNonFatalFailure)
+  for (int i = 0; i < test_results.size(); ++i)
+    if (test_results.GetTestPartResult(i).failed())
       ++n;
-  }
   return n;
 }
 
@@ -78,6 +84,10 @@ TEST(test_unit_math_test_ad, test_number_of_failures) {
     FAIL();
   };
   auto test_that_throws = []() { throw std::exception{}; };
+  auto test_that_succeeds_and_throws = []() {
+    SUCCEED();
+    throw std::exception{};
+  };
   auto test_that_fails_and_throws = []() {
     ADD_FAILURE();
     throw std::exception{};
@@ -93,14 +103,27 @@ TEST(test_unit_math_test_ad, test_number_of_failures) {
   EXPECT_EQ(1, number_of_failures(test_that_fails_fatally));
   EXPECT_EQ(2, number_of_failures(test_that_fails_nonfatally_and_fatally));
   EXPECT_EQ(1, number_of_failures(test_that_throws));
+  EXPECT_EQ(1, number_of_failures(test_that_succeeds_and_throws));
   EXPECT_EQ(2, number_of_failures(test_that_fails_and_throws));
 }
 
+/**
+ * Test that the `expect_ad` framework is able to catch a particular bug.
+ * `expect_ad_fails(f, xs...)` is `true` if and only if `expect_ad(f, xs...)`
+ * fails. If `f` is a function with a deliberately introduced bug that
+ * `expect_ad` should be able to catch, `EXPECT_TRUE(expect_ad_fails(f, xs...))`
+ * will ensure that `expect_ad` is capable of catching it.
+ * @tparam F type of function
+ * @tparam Ts types of arguments to function
+ * @param f function to test with expect_ad
+ * @param xs arguments to test
+ */
 template <typename F, typename... Ts>
 bool expect_ad_fails(const F& f, const Ts&... xs) {
   auto g = [](auto& f, auto&... xs) { stan::test::expect_ad(f, xs...); };
   return 0 < number_of_failures(g, f, xs...);
 }
+
 // VECTORIZED UNARY FUNCTION THAT PASSES
 
 // log10 is vectorized, so uses vectorized test
