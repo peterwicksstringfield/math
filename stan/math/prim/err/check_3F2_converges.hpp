@@ -70,7 +70,7 @@ inline void check_3F2_converges(const char* function, const T_a1& a1,
     is_polynomial = true;
     num_terms = floor(fabs_a2d);
   }
-  double fabs_a2d = fabs(a3d);
+  double fabs_a3d = fabs(a3d);
   if (is_nonpositive_integer(a3d) && fabs_a3d >= num_terms) {
     is_polynomial = true;
     num_terms = floor(fabs_a3d);
